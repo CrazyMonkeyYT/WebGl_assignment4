@@ -1,0 +1,133 @@
+<!-- 
+COMP 370 assignment #4: Affine Transformations in a WebGL Application
+Thomas Williamson
+id: 588206
+2021/11/16
+ -->
+<!DOCTYPE html>
+<html>
+
+<script id="vertex-shader" type="x-shader/x-vertex">
+#version 300 es
+
+in  vec4 aPosition;
+in  vec4 aColor;
+out vec4 vColor;
+
+uniform vec3 uTheta;
+uniform vec3 transform;
+uniform vec3 scaling;
+
+void main()
+{
+    // Compute the sines and cosines of theta for each of
+    //   the three axes in one computation.
+    vec3 angles = radians( uTheta );
+    vec3 c = cos( angles );
+    vec3 s = sin( angles );
+
+    // Remeber: thse matrices are column-major
+    mat4 rx = mat4( 1.0,  0.0,  0.0, 0.0,
+		    0.0,  c.x,  s.x, 0.0,
+		    0.0, -s.x,  c.x, 0.0,
+		    0.0,  0.0,  0.0, 1.0 );
+
+    mat4 ry = mat4( c.y, 0.0, -s.y, 0.0,
+		    0.0, 1.0,  0.0, 0.0,
+		    s.y, 0.0,  c.y, 0.0,
+		    0.0, 0.0,  0.0, 1.0 );
+
+
+    mat4 rz = mat4( c.z, s.z, 0.0, 0.0,
+		    -s.z,  c.z, 0.0, 0.0,
+		    0.0,  0.0, 1.0, 0.0,
+		    0.0,  0.0, 0.0, 1.0 );
+
+    mat4 t = mat4(
+            1, 0, 0, 0,
+            transform.x, 1, 0, 0,
+            transform.y, 0, 1, 0,
+            0, 0, 0, 1);
+
+    mat4 scail = mat4( scaling.x, 0, 0, 0,
+            0, scaling.y, 0, 0,
+            0, 0, scaling.z, 0,
+            0, 0, 0, 1);
+
+
+
+
+    vColor = aColor;
+    gl_Position = t * scail *(rz * ry * rx) * aPosition;
+    gl_Position.z = -gl_Position.z;
+}
+</script>
+
+<script id="fragment-shader" type="x-shader/x-fragment">
+#version 300 es
+
+precision mediump float;
+
+in vec4 vColor;
+out vec4 fColor;
+
+void
+main()
+{
+    fColor = vColor;
+}
+</script>
+
+<script type="text/javascript" src="../Common/initShaders.js"></script>
+<script type="text/javascript" src="../Common/MVnew.js"></script>
+<script type="text/javascript" src="assignment4.js"></script>
+
+<body style="background-color:rgb(210,210,210);">
+<canvas id="gl-canvas" width="512" height="512">
+Oops ... your browser doesn't support the HTML5 canvas element
+</canvas>
+
+<br/>
+
+<button id= "Test1Button">Scale 0.2 +X & Rotate 45 -Y</button>
+<button id= "Test2Button">Rotate 45-Y & Scale 0.2 +X</button>
+<button id= "Reset">Reset</button>
+<div>
+ Translate:<br>   
+ -X <input id="TranslateX" type="range"
+min="-1" max="1" step=".10" value="0" />
++X<br> 
+ -Y <input id="TranslateY" type="range"
+min="-1" max="1" step=".10" value="-0.3" />
++Y <br>
+-Z <input id="TranslateZ" type="range"
+min="-1" max="1" step=".10" value="0" />
++Z </div>
+
+<div>
+Rotate:<br>   
+ -X <input id="RotateX" type="range"
+min="0" max="360" step="1" value="263" />
++X<br> 
+ -Y <input id="RotateY" type="range"
+min="0" max="360" step="1" value="242" />
++Y <br>
+-Z <input id="RotateZ" type="range"
+min="0" max="360" step="1" value="244" />
++Z </div>
+
+<div>
+ Scale:<br>   
+ -X <input id="ScaleX" type="range"
+min="0" max="2" step=".10" value="1" />
++X<br> 
+ -Y <input id="ScaleY" type="range"
+min="0" max="2" step=".10" value="1" />
++Y <br>
+-Z <input id="ScaleZ" type="range"
+min="0" max="2" step=".10" value="1" />
++Z </div><br>
+
+
+</body>
+</html>
